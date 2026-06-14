@@ -10,6 +10,12 @@ import {
   type GoalInput,
   type GoalStatus,
 } from "./goals";
+import {
+  loadGuestGoals,
+  createGuestGoal,
+  updateGuestGoal,
+  deleteGuestGoal,
+} from "./guest-store";
 
 type Ctx = {
   goals: Goal[];
@@ -32,12 +38,12 @@ export function GoalProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
+    setLoading(true);
     if (!user) {
-      setGoals([]);
+      setGoals(loadGuestGoals());
       setLoading(false);
       return;
     }
-    setLoading(true);
     const list = await fetchGoals(user.id);
     setGoals(list);
     setLoading(false);
@@ -49,7 +55,11 @@ export function GoalProvider({ children }: { children: ReactNode }) {
 
   const createGoal = useCallback(
     async (input: GoalInput) => {
-      if (!user) return null;
+      if (!user) {
+        const g = createGuestGoal(input);
+        setGoals((prev) => [g, ...prev]);
+        return g;
+      }
       const g = await dbCreateGoal(user.id, input);
       if (g) setGoals((prev) => [g, ...prev]);
       return g;
@@ -57,9 +67,8 @@ export function GoalProvider({ children }: { children: ReactNode }) {
     [user],
   );
 
-  const updateGoal = useCallback(async (id: string, patch: Partial<GoalInput>) => {
-    const ok = await dbUpdateGoal(id, patch);
-    if (ok) {
+  const applyLocalPatch = useCallback(
+    (id: string, patch: Partial<GoalInput> & { currentValue?: number; status?: GoalStatus; completedAt?: string | null }) => {
       setGoals((prev) =>
         prev.map((g) =>
           g.id === id
@@ -73,79 +82,123 @@ export function GoalProvider({ children }: { children: ReactNode }) {
                 goalType: patch.goalType ?? g.goalType,
                 difficulty: patch.difficulty ?? g.difficulty,
                 targetValue: patch.targetValue ?? g.targetValue,
+                currentValue: patch.currentValue ?? g.currentValue,
                 unit: patch.unit ?? g.unit,
                 deadline: patch.deadline ?? g.deadline,
                 rewardCoins: patch.rewardCoins ?? g.rewardCoins,
                 rewardXp: patch.rewardXp ?? g.rewardXp,
                 rewardItem: patch.rewardItem ?? g.rewardItem,
+                status: patch.status ?? g.status,
+                completedAt: patch.completedAt ?? g.completedAt,
               }
             : g,
         ),
       );
-    }
-    return ok;
-  }, []);
+    },
+    [],
+  );
 
-  const deleteGoal = useCallback(async (id: string) => {
-    const ok = await dbDeleteGoal(id);
-    if (ok) setGoals((prev) => prev.filter((g) => g.id !== id));
-    return ok;
-  }, []);
+  const updateGoal = useCallback(
+    async (id: string, patch: Partial<GoalInput>) => {
+      if (!user) {
+        const ok = updateGuestGoal(id, patch);
+        if (ok) applyLocalPatch(id, patch);
+        return ok;
+      }
+      const ok = await dbUpdateGoal(id, patch);
+      if (ok) applyLocalPatch(id, patch);
+      return ok;
+    },
+    [user, applyLocalPatch],
+  );
 
-  const setProgress = useCallback(async (id: string, value: number) => {
-    const ok = await dbUpdateGoal(id, { currentValue: Math.max(0, value) });
-    if (ok) {
-      setGoals((prev) =>
-        prev.map((g) => (g.id === id ? { ...g, currentValue: Math.max(0, value) } : g)),
-      );
-    }
-    return ok;
-  }, []);
+  const deleteGoal = useCallback(
+    async (id: string) => {
+      if (!user) {
+        const ok = deleteGuestGoal(id);
+        if (ok) setGoals((prev) => prev.filter((g) => g.id !== id));
+        return ok;
+      }
+      const ok = await dbDeleteGoal(id);
+      if (ok) setGoals((prev) => prev.filter((g) => g.id !== id));
+      return ok;
+    },
+    [user],
+  );
+
+  const setProgress = useCallback(
+    async (id: string, value: number) => {
+      const v = Math.max(0, value);
+      if (!user) {
+        const ok = updateGuestGoal(id, { currentValue: v });
+        if (ok) {
+          setGoals((prev) =>
+            prev.map((g) => (g.id === id ? { ...g, currentValue: v } : g)),
+          );
+        }
+        return ok;
+      }
+      const ok = await dbUpdateGoal(id, { currentValue: v });
+      if (ok) {
+        setGoals((prev) =>
+          prev.map((g) => (g.id === id ? { ...g, currentValue: v } : g)),
+        );
+      }
+      return ok;
+    },
+    [user],
+  );
 
   const completeGoal = useCallback(
     async (id: string) => {
       const g = goals.find((x) => x.id === id);
       if (!g) return { ok: false, coins: 0, xp: 0 };
       if (g.status !== "active") return { ok: false, coins: 0, xp: 0 };
-      // Validate completion criteria. Simple goals are always validatable.
       if (!isGoalComplete(g)) return { ok: false, coins: 0, xp: 0 };
       const now = new Date().toISOString();
-      const ok = await dbUpdateGoal(id, {
+      const patch = {
         status: "completed" as GoalStatus,
         completedAt: now,
         currentValue: g.targetValue,
-      });
+      };
+      const ok = user ? await dbUpdateGoal(id, patch) : updateGuestGoal(id, patch);
       if (ok) {
         setGoals((prev) =>
           prev.map((x) =>
-            x.id === id
-              ? { ...x, status: "completed", completedAt: now, currentValue: g.targetValue }
-              : x,
+            x.id === id ? { ...x, ...patch } : x,
           ),
         );
       }
       return { ok, coins: ok ? g.rewardCoins : 0, xp: ok ? g.rewardXp : 0 };
     },
-    [goals],
+    [goals, user],
   );
 
-  const archiveGoal = useCallback(async (id: string) => {
-    const ok = await dbUpdateGoal(id, { status: "archived" as GoalStatus });
-    if (ok) {
-      setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, status: "archived" } : g)));
-    }
-    return ok;
-  }, []);
+  const archiveGoal = useCallback(
+    async (id: string) => {
+      const patch = { status: "archived" as GoalStatus };
+      const ok = user ? await dbUpdateGoal(id, patch) : updateGuestGoal(id, patch);
+      if (ok) {
+        setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, status: "archived" } : g)));
+      }
+      return ok;
+    },
+    [user],
+  );
 
-  const restoreGoal = useCallback(async (id: string) => {
-    const ok = await dbUpdateGoal(id, { status: "active" as GoalStatus, completedAt: null });
-    if (ok) {
-      setGoals((prev) =>
-        prev.map((g) => (g.id === id ? { ...g, status: "active", completedAt: null } : g)),
-      );
-    }
-    return ok;
-  }, []);
+  const restoreGoal = useCallback(
+    async (id: string) => {
+      const patch = { status: "active" as GoalStatus, completedAt: null };
+      const ok = user ? await dbUpdateGoal(id, patch) : updateGuestGoal(id, patch);
+      if (ok) {
+        setGoals((prev) =>
+          prev.map((g) => (g.id === id ? { ...g, status: "active", completedAt: null } : g)),
+        );
+      }
+      return ok;
+    },
+    [user],
+  );
 
   return (
     <GoalContext.Provider

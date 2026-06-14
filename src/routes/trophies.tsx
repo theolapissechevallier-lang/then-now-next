@@ -29,6 +29,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useAchievements } from "@/lib/achievements-store";
 import { useGoals } from "@/lib/goals-store";
 import { useAppState } from "@/lib/store";
+import { GuestAccountBanner } from "@/components/guest-account-banner";
 import {
   ACHIEVEMENTS,
   RARITY_STYLE,
@@ -94,18 +95,6 @@ function TrophyRoom() {
     [goals],
   );
 
-  if (!user) {
-    return (
-      <div className="px-5 pt-12">
-        <ScreenHeader
-          eyebrow="Trophy Room"
-          title="Sign in to start collecting"
-          subtitle="Your trophies, badges and achievements live here forever."
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="pb-10" data-testid="trophy-room">
       <ScreenHeader
@@ -114,6 +103,11 @@ function TrophyRoom() {
         subtitle="Every goal crushed, streak survived, pet evolved — preserved forever."
       />
 
+      {!user && (
+        <div className="px-5 pt-6">
+          <GuestAccountBanner />
+        </div>
+      )}
       {/* Prestige header */}
       <div className="px-5 pt-6">
         <div className="relative overflow-hidden rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/15 via-card/70 to-fuchsia-500/10 p-5">

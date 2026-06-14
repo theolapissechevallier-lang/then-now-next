@@ -27,6 +27,7 @@ import {
   type UnlockedAchievement,
   type UserStats,
 } from "./achievements";
+import { loadGuestAchievements, unlockGuestAchievements } from "./guest-store";
 
 type Ctx = {
   unlocked: UnlockedAchievement[];
@@ -52,7 +53,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     if (!user) {
-      setUnlocked([]);
+      setUnlocked(loadGuestAchievements());
       setLifetimeHabits(0);
       setLifetimeCoins(0);
       setLoading(false);
@@ -100,21 +101,21 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
 
   // Auto-unlock loop. Runs whenever stats change.
   useEffect(() => {
-    if (!user || loading || checkingRef.current) return;
+    if (loading || checkingRef.current) return;
     const known = new Set(unlocked.map((u) => u.achievementId));
     const newly = evaluateAchievements(stats, known);
     if (newly.length === 0) return;
     checkingRef.current = true;
     (async () => {
-      const inserted = await persistUnlocks(
-        user.id,
-        newly.map((n) => n.id),
-      );
+      const ids = newly.map((n) => n.id);
+      const inserted = user
+        ? await persistUnlocks(user.id, ids)
+        : unlockGuestAchievements(ids);
       if (inserted.length > 0) {
         setUnlocked((prev) => {
-          const ids = new Set(prev.map((p) => p.achievementId));
+          const seen = new Set(prev.map((p) => p.achievementId));
           const merged = [...prev];
-          for (const row of inserted) if (!ids.has(row.achievementId)) merged.unshift(row);
+          for (const row of inserted) if (!seen.has(row.achievementId)) merged.unshift(row);
           return merged;
         });
         for (const row of inserted) {

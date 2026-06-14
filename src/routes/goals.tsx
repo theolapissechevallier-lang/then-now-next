@@ -64,6 +64,7 @@ import { useGoals } from "@/lib/goals-store";
 import { useAppState } from "@/lib/store";
 import { shareCard } from "@/lib/share-card";
 import type { AchievementRarity } from "@/lib/achievements";
+import { GuestAccountBanner } from "@/components/guest-account-banner";
 import {
   DIFFICULTY_PRESETS,
   daysUntil,
@@ -123,18 +124,6 @@ function GoalsScreen() {
 
   const tabbed = useMemo(() => goals.filter((g) => g.status === tab), [goals, tab]);
 
-  if (!user) {
-    return (
-      <div className="px-5 pt-12">
-        <ScreenHeader
-          eyebrow="Goals"
-          title="Sign in to set goals"
-          subtitle="Your goals sync to your account so you never lose progress."
-        />
-      </div>
-    );
-  }
-
   const handleComplete = async (g: Goal) => {
     const { ok, coins, xp } = await completeGoal(g.id);
     if (ok) {
@@ -156,6 +145,8 @@ function GoalsScreen() {
         title="What are you building?"
         subtitle="Set targets, track progress, claim rewards."
       />
+
+      {!user && <div className="px-5 pt-6"><GuestAccountBanner /></div>}
 
       <div className="px-5 pt-6">
         <Button

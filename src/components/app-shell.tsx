@@ -2,12 +2,10 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Hop as Home,
   Activity,
-  PawPrint,
   ShoppingBag,
   Target,
   Settings,
   Trophy,
-  BookHeart,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -16,9 +14,8 @@ import { useAuth } from "@/lib/auth-context";
 const NAV = [
   { to: "/", label: "Today", icon: Home },
   { to: "/track", label: "Track", icon: Activity },
-  { to: "/journal", label: "Journal", icon: BookHeart },
   { to: "/goals", label: "Goals", icon: Target },
-  { to: "/pet", label: "Pet", icon: PawPrint },
+  { to: "/trophies", label: "Trophies", icon: Trophy },
   { to: "/shop", label: "Shop", icon: ShoppingBag },
 ] as const;
 

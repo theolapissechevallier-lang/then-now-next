@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Flame, ArrowRight, Sparkles, TrendingUp, PawPrint } from "lucide-react";
+import { Flame, ArrowRight, Sparkles, TrendingUp, PawPrint, BookHeart, Heart, UtensilsCrossed } from "lucide-react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useAppState, scoreToday, project, GOAL_META } from "@/lib/store";
+import { useJournal } from "@/lib/journal-store";
+import { MOOD_CONFIG } from "@/lib/journal-types";
 import { AvatarPortrait } from "@/components/avatar";
 import { PetCreature } from "@/components/pet";
 import { CoinPill } from "@/components/coin-pill";
@@ -20,8 +23,12 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { state, today, pet, checkIn } = useAppState();
+  const { getMood } = useJournal();
   const navigate = useNavigate();
   const [dateLabel, setDateLabel] = useState("");
+
+  const todayDate = format(new Date(), "yyyy-MM-dd");
+  const todayMood = getMood(todayDate);
 
   useEffect(() => {
     setDateLabel(
@@ -74,28 +81,72 @@ function Index() {
         </h1>
       </section>
 
+      {/* Pet & Journal Cards */}
       <section className="mt-6 grid grid-cols-2 gap-3">
         <Link
-          to="/avatar"
-          className="group flex flex-col items-start rounded-3xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
-        >
-          <AvatarPortrait avatar={state.avatar} size={120} />
-          <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Your avatar
-          </p>
-          <p className="text-sm font-semibold">Customize →</p>
-        </Link>
-        <Link
           to="/pet"
-          className="group flex flex-col items-start rounded-3xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+          className="group flex flex-col rounded-3xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
         >
-          <div className="grid h-[120px] w-[120px] place-items-center">
-            <PetCreature pet={pet} size={120} animate={false} />
+          <div className="flex items-center justify-center">
+            <PetCreature pet={pet} size={100} animate={false} />
           </div>
           <p className="mt-3 flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            <PawPrint className="size-3" /> {state.pet.name} · Lv {pet.stage.level}
+            <PawPrint className="size-3" /> {state.pet.name}
           </p>
-          <p className="text-sm font-semibold capitalize">{pet.stage.stage} →</p>
+          <p className="text-sm font-semibold">Lv {pet.stage.level} · {pet.stage.stage}</p>
+          <div className="mt-2 flex gap-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-0.5">
+              <UtensilsCrossed className="size-3" /> {Math.round(pet.hunger)}%
+            </span>
+            <span className="flex items-center gap-0.5">
+              <Heart className="size-3" /> {Math.round(pet.happiness)}%
+            </span>
+          </div>
+          <Button size="sm" variant="secondary" className="mt-3 w-full">
+            Visit Pet
+          </Button>
+        </Link>
+        <Link
+          to="/journal"
+          className="group flex flex-col rounded-3xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+        >
+          <div className="flex h-[100px] items-center justify-center">
+            {todayMood ? (
+              <div className="text-center">
+                <span className="text-5xl">{MOOD_CONFIG[todayMood.mood].emoji}</span>
+                <p className="mt-1 text-xs text-muted-foreground">Today's mood</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-muted-foreground">
+                <BookHeart className="size-12" />
+                <p className="mt-2 text-xs">Write your memory</p>
+              </div>
+            )}
+          </div>
+          <p className="mt-3 flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <BookHeart className="size-3" /> Journal
+          </p>
+          <p className="text-sm font-semibold">
+            {todayMood ? MOOD_CONFIG[todayMood.mood].label : "Write today's memory"}
+          </p>
+          <Button size="sm" variant="secondary" className="mt-3 w-full">
+            Open Journal
+          </Button>
+        </Link>
+      </section>
+
+      {/* Customize Card */}
+      <section className="mt-3">
+        <Link
+          to="/avatar"
+          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-colors hover:border-primary/40"
+        >
+          <AvatarPortrait avatar={state.avatar} size={56} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">Customize your avatar</p>
+            <p className="text-xs text-muted-foreground">Change hair, outfit, and more</p>
+          </div>
+          <ArrowRight className="size-4 text-muted-foreground" />
         </Link>
       </section>
 

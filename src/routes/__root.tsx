@@ -19,6 +19,7 @@ import { PetProvider } from "@/lib/pet-store";
 import { AvatarProvider } from "@/lib/avatar-store";
 import { GoalProvider } from "@/lib/goals-store";
 import { AchievementsProvider } from "@/lib/achievements-store";
+import { JournalProvider } from "@/lib/journal-store";
 import { Button } from "@/components/ui/button";
 
 function NotFoundComponent() {
@@ -162,11 +163,13 @@ function RootComponent() {
             <AvatarProvider>
               <GoalProvider>
                 <AchievementsProvider>
-                  <AuthLoadingGate>
-                    <AppShell>
-                      <Outlet />
-                    </AppShell>
-                  </AuthLoadingGate>
+                  <JournalProvider>
+                    <AuthLoadingGate>
+                      <AppShell>
+                        <Outlet />
+                      </AppShell>
+                    </AuthLoadingGate>
+                  </JournalProvider>
                 </AchievementsProvider>
               </GoalProvider>
               <Toaster position="top-center" theme="dark" />

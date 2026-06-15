@@ -4,9 +4,14 @@
 
 import type { Goal, GoalInput, GoalStatus, GoalType, GoalDifficulty } from "./goals";
 import type { UnlockedAchievement } from "./achievements";
+import type { JournalEntryInput, MoodType, HighlightInput, LifeEventInput } from "./journal-types";
 
 const GOALS_KEY = "future-me:guest:goals";
 const ACHIEVEMENTS_KEY = "future-me:guest:achievements";
+const JOURNAL_ENTRIES_KEY = "future-me:guest:journal_entries";
+const JOURNAL_MOODS_KEY = "future-me:guest:journal_moods";
+const JOURNAL_HIGHLIGHTS_KEY = "future-me:guest:journal_highlights";
+const LIFE_EVENTS_KEY = "future-me:guest:life_events";
 
 function uid(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -143,12 +148,158 @@ export function unlockGuestAchievements(ids: string[]): UnlockedAchievement[] {
   return newly;
 }
 
+// ---------- Journal entries ----------
+
+export function loadGuestJournalEntries() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(JOURNAL_ENTRIES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistGuestJournalEntries(entries: unknown[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(JOURNAL_ENTRIES_KEY, JSON.stringify(entries));
+}
+
+export function saveGuestJournalEntry(date: string, input: JournalEntryInput) {
+  const entries = loadGuestJournalEntries();
+  const now = new Date().toISOString();
+  const existing = entries.find((e: { date: string }) => e.date === date);
+  if (existing) {
+    Object.assign(existing, input, { updatedAt: now });
+  } else {
+    entries.unshift({
+      id: uid("je"),
+      userId: "guest",
+      date,
+      ...input,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  persistGuestJournalEntries(entries);
+}
+
+// ---------- Journal moods ----------
+
+export function loadGuestJournalMoods() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(JOURNAL_MOODS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistGuestJournalMoods(moods: unknown[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(JOURNAL_MOODS_KEY, JSON.stringify(moods));
+}
+
+export function saveGuestJournalMood(date: string, mood: MoodType) {
+  const moods = loadGuestJournalMoods();
+  const now = new Date().toISOString();
+  const existing = moods.find((m: { date: string }) => m.date === date);
+  if (existing) {
+    existing.mood = mood;
+  } else {
+    moods.unshift({ id: uid("jm"), userId: "guest", date, mood, createdAt: now });
+  }
+  persistGuestJournalMoods(moods);
+}
+
+// ---------- Journal highlights ----------
+
+export function loadGuestJournalHighlights() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(JOURNAL_HIGHLIGHTS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistGuestJournalHighlights(highlights: unknown[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(JOURNAL_HIGHLIGHTS_KEY, JSON.stringify(highlights));
+}
+
+export function saveGuestJournalHighlight(date: string, input: HighlightInput) {
+  const highlights = loadGuestJournalHighlights();
+  const now = new Date().toISOString();
+  const existing = highlights.find((h: { date: string }) => h.date === date);
+  if (existing) {
+    Object.assign(existing, input);
+  } else {
+    highlights.unshift({
+      id: uid("jh"),
+      userId: "guest",
+      date,
+      ...input,
+      createdAt: now,
+    });
+  }
+  persistGuestJournalHighlights(highlights);
+}
+
+// ---------- Life events ----------
+
+export function loadGuestLifeEvents() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LIFE_EVENTS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistGuestLifeEvents(events: unknown[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LIFE_EVENTS_KEY, JSON.stringify(events));
+}
+
+export function saveGuestLifeEvent(input: LifeEventInput) {
+  const events = loadGuestLifeEvents();
+  const now = new Date().toISOString();
+  events.unshift({
+    id: uid("le"),
+    userId: "guest",
+    ...input,
+    metadata: input.metadata ?? {},
+    createdAt: now,
+  });
+  persistGuestLifeEvents(events);
+}
+
 // ---------- Helpers used by migration ----------
 
 export function clearGuestData() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(GOALS_KEY);
   localStorage.removeItem(ACHIEVEMENTS_KEY);
+}
+
+export function clearGuestJournalData() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(JOURNAL_ENTRIES_KEY);
+  localStorage.removeItem(JOURNAL_MOODS_KEY);
+  localStorage.removeItem(JOURNAL_HIGHLIGHTS_KEY);
+  localStorage.removeItem(LIFE_EVENTS_KEY);
 }
 
 // True when the user has done something meaningful that's worth preserving.

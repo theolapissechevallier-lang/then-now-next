@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameMonth, parseISO } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isToday, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { ScreenHeader } from "@/components/app-shell";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useJournal } from "@/lib/journal-store";
 import { useAppState } from "@/lib/store";
+import type { MonthlySummary } from "@/lib/journal-types";
 import { MOOD_CONFIG, type MoodType, type LifeEvent } from "@/lib/journal-types";
 import { CalendarDays, Star, Trophy, Target, Sparkles, ChevronLeft, ChevronRight, Search, BookHeart } from "lucide-react";
 
@@ -454,17 +455,18 @@ function CalendarView() {
           ) : (
             <div className="space-y-3">
               {searchResults.map((entry) => (
-                <Link
+                <button
                   key={entry.id}
-                  to="/journal"
-                  search={{ date: entry.date }}
-                  className="block rounded-2xl bg-secondary/40 p-3 hover:bg-secondary/60"
+                  onClick={() => {
+                    // Could navigate to specific date in future
+                  }}
+                  className="block w-full rounded-2xl bg-secondary/40 p-3 text-left hover:bg-secondary/60"
                 >
                   <p className="text-xs text-muted-foreground">{format(parseISO(entry.date), "MMMM d, yyyy")}</p>
                   <p className="mt-1 text-sm font-medium line-clamp-2">
                     {entry.importantEvent || entry.proudOf || entry.learned || "Entry"}
                   </p>
-                </Link>
+                </button>
               ))}
             </div>
           )}
@@ -560,7 +562,7 @@ function CalendarView() {
 function MonthlyMemories() {
   const { getMonthlySummary, loading, moods, entries } = useJournal();
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const [summary, setSummary] = useState<Awaited<ReturnType<typeof getMonthlySummary>>(null);
+  const [summary, setSummary] = useState<MonthlySummary | null>(null);
 
   useEffect(() => {
     const loadSummary = async () => {
@@ -622,8 +624,8 @@ function MonthlyMemories() {
           <StatCard label="Trophies Unlocked" value={summary.stats.trophiesUnlocked} emoji="🏆" />
           <StatCard
             label="Top Mood"
-            value={summary.stats.topMood ? MOOD_CONFIG[summary.stats.topMood].label : "N/A"}
-            emoji={summary.stats.topMood ? MOOD_CONFIG[summary.stats.topMood].emoji : "—"}
+            value={summary.stats.topMood ? MOOD_CONFIG[summary.stats.topMood as MoodType].label : "N/A"}
+            emoji={summary.stats.topMood ? MOOD_CONFIG[summary.stats.topMood as MoodType].emoji : "—"}
           />
         </div>
       )}

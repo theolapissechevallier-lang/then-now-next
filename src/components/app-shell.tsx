@@ -7,6 +7,7 @@ import {
   Target,
   Settings,
   Trophy,
+  BookHeart,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -15,8 +16,8 @@ import { useAuth } from "@/lib/auth-context";
 const NAV = [
   { to: "/", label: "Today", icon: Home },
   { to: "/track", label: "Track", icon: Activity },
+  { to: "/journal", label: "Journal", icon: BookHeart },
   { to: "/goals", label: "Goals", icon: Target },
-  { to: "/trophies", label: "Trophies", icon: Trophy },
   { to: "/pet", label: "Pet", icon: PawPrint },
   { to: "/shop", label: "Shop", icon: ShoppingBag },
 ] as const;

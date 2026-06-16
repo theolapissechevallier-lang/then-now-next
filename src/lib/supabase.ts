@@ -1,21 +1,18 @@
-import { createClient } from "@supabase/supabase-js";
+// Re-export the Lovable Cloud generated client as an untyped instance so the legacy
+// app code (which uses ad-hoc snake_case payloads) keeps working without a full
+// types refactor. Always import the single client from "@/lib/supabase".
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { supabase as cloudClient } from "@/integrations/supabase/client";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("Supabase environment variables not configured. Running in local-only mode.");
+let _client: SupabaseClient | null = null;
+try {
+  _client = cloudClient as unknown as SupabaseClient;
+} catch (e) {
+  console.warn("Cloud client unavailable, running in local-only mode.", e);
+  _client = null;
 }
 
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    })
-  : null;
+export const supabase = _client;
 
 export function isSupabaseAvailable(): boolean {
   return supabase !== null;

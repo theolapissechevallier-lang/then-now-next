@@ -1,9 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Dumbbell, Languages, DollarSign, Clock } from "lucide-react";
+import { BookOpen, Dumbbell, Languages, DollarSign, Clock, Activity, Plus } from "lucide-react";
 import { ScreenHeader } from "@/components/app-shell";
-import { useAppState, project } from "@/lib/store";
+import { project } from "@/lib/store";
+import { useDerivedToday } from "@/lib/projection-bridge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/future")({
@@ -19,10 +21,46 @@ const HORIZONS = [
 ] as const;
 
 function Future() {
-  const { today } = useAppState();
+  const { entry, loading, hasAnyData, habitsCount } = useDerivedToday();
   const [idx, setIdx] = useState(1);
   const horizon = HORIZONS[idx];
-  const p = project(today, horizon.days);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Activity className="size-6 animate-pulse text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!hasAnyData) {
+    return (
+      <div>
+        <ScreenHeader
+          eyebrow="Projection engine"
+          title="Nothing to project yet"
+          subtitle="Log at least one habit today so we can extrapolate where it leads."
+        />
+        <div className="mt-8 px-5">
+          <div className="rounded-3xl border border-border bg-card p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              {habitsCount === 0
+                ? "Create your first habit, then come back."
+                : "Track at least one habit today to see your future."}
+            </p>
+            <Button asChild className="mt-4 w-full">
+              <Link to={habitsCount === 0 ? "/habits" : "/track"}>
+                <Plus className="mr-2 size-4" />
+                {habitsCount === 0 ? "Create a habit" : "Track today"}
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const p = project(entry, horizon.days);
 
   return (
     <div>

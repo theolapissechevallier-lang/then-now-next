@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Flame } from "lucide-react";
+import { Flame, Activity, Plus } from "lucide-react";
 import { ScreenHeader } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { useAppState, project } from "@/lib/store";
+import { useDerivedToday } from "@/lib/projection-bridge";
 
 export const Route = createFileRoute("/reality")({
   head: () => ({ meta: [{ title: "Reality Check — Future Me" }] }),
@@ -10,10 +11,40 @@ export const Route = createFileRoute("/reality")({
 });
 
 function Reality() {
-  const { today, state } = useAppState();
-  const p10 = project(today, 365 * 10);
+  const { state } = useAppState();
+  const { entry, loading, hasAnyData, habitsCount } = useDerivedToday();
   const age = state.profile.age ?? 25;
   const targetAge = age + 10;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Activity className="size-6 animate-pulse text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!hasAnyData) {
+    return (
+      <div>
+        <ScreenHeader
+          eyebrow="Reality check"
+          title="Track today first"
+          subtitle="We need at least one logged habit to project 10 years ahead."
+        />
+        <div className="mt-8 px-5">
+          <Button asChild className="h-12 w-full rounded-2xl">
+            <Link to={habitsCount === 0 ? "/habits" : "/track"}>
+              <Plus className="mr-2 size-4" />
+              {habitsCount === 0 ? "Create a habit" : "Log today"}
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const p10 = project(entry, 365 * 10);
 
   const lines = [
     { big: `${p10.screenHoursLost.toLocaleString()}h`, small: "lost to scrolling" },

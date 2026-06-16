@@ -122,6 +122,87 @@ export type Database = {
         }
         Relationships: []
       }
+      feeding_history: {
+        Row: {
+          fed_at: string | null
+          food_id: string
+          id: string
+          pet_id: string
+          user_id: string
+        }
+        Insert: {
+          fed_at?: string | null
+          food_id: string
+          id?: string
+          pet_id: string
+          user_id: string
+        }
+        Update: {
+          fed_at?: string | null
+          food_id?: string
+          id?: string
+          pet_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeding_history_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feeding_history_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      foods: {
+        Row: {
+          category: string | null
+          description: string | null
+          emoji: string
+          energy_value: number | null
+          happiness_value: number | null
+          hunger_value: number | null
+          id: string
+          name: string
+          premium_only: boolean | null
+          price: number
+          xp_value: number | null
+        }
+        Insert: {
+          category?: string | null
+          description?: string | null
+          emoji: string
+          energy_value?: number | null
+          happiness_value?: number | null
+          hunger_value?: number | null
+          id: string
+          name: string
+          premium_only?: boolean | null
+          price: number
+          xp_value?: number | null
+        }
+        Update: {
+          category?: string | null
+          description?: string | null
+          emoji?: string
+          energy_value?: number | null
+          happiness_value?: number | null
+          hunger_value?: number | null
+          id?: string
+          name?: string
+          premium_only?: boolean | null
+          price?: number
+          xp_value?: number | null
+        }
+        Relationships: []
+      }
       habit_logs: {
         Row: {
           coins_earned: number | null
@@ -337,6 +418,7 @@ export type Database = {
           name: string | null
           skin: string | null
           species: string | null
+          stored_energy: number | null
           stored_happiness: number | null
           stored_hunger: number | null
           updated_at: string | null
@@ -354,6 +436,7 @@ export type Database = {
           name?: string | null
           skin?: string | null
           species?: string | null
+          stored_energy?: number | null
           stored_happiness?: number | null
           stored_hunger?: number | null
           updated_at?: string | null
@@ -371,6 +454,7 @@ export type Database = {
           name?: string | null
           skin?: string | null
           species?: string | null
+          stored_energy?: number | null
           stored_happiness?: number | null
           stored_hunger?: number | null
           updated_at?: string | null
@@ -612,6 +696,38 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      user_foods: {
+        Row: {
+          acquired_at: string | null
+          food_id: string
+          id: string
+          quantity: number | null
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string | null
+          food_id: string
+          id?: string
+          quantity?: number | null
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string | null
+          food_id?: string
+          id?: string
+          quantity?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_foods_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_goals: {
         Row: {

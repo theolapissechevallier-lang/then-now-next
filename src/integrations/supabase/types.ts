@@ -508,6 +508,111 @@ export type Database = {
         }
         Relationships: []
       }
+      user_avatars: {
+        Row: {
+          accessory: string | null
+          background: string | null
+          created_at: string | null
+          eye_color: string | null
+          eye_style: string | null
+          hair_color: string | null
+          hair_style: string | null
+          id: string
+          outfit: string | null
+          outfit_color: string | null
+          skin_tone: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accessory?: string | null
+          background?: string | null
+          created_at?: string | null
+          eye_color?: string | null
+          eye_style?: string | null
+          hair_color?: string | null
+          hair_style?: string | null
+          id?: string
+          outfit?: string | null
+          outfit_color?: string | null
+          skin_tone?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accessory?: string | null
+          background?: string | null
+          created_at?: string | null
+          eye_color?: string | null
+          eye_style?: string | null
+          hair_color?: string | null
+          hair_style?: string | null
+          id?: string
+          outfit?: string | null
+          outfit_color?: string | null
+          skin_tone?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_balances: {
+        Row: {
+          coins: number | null
+          id: string
+          total_earned: number | null
+          total_spent: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          coins?: number | null
+          id?: string
+          total_earned?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          coins?: number | null
+          id?: string
+          total_earned?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_cosmetics: {
+        Row: {
+          equipped: boolean | null
+          id: string
+          item_id: string
+          owned: boolean | null
+          purchased_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          equipped?: boolean | null
+          id?: string
+          item_id: string
+          owned?: boolean | null
+          purchased_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          equipped?: boolean | null
+          id?: string
+          item_id?: string
+          owned?: boolean | null
+          purchased_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_goals: {
         Row: {
           category: string

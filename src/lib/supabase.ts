@@ -1,21 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
+// Re-export the Lovable Cloud generated client so all app code uses a single instance.
+import { supabase as cloudClient } from "@/integrations/supabase/client";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("Supabase environment variables not configured. Running in local-only mode.");
+let _client: typeof cloudClient | null = null;
+try {
+  _client = cloudClient;
+} catch (e) {
+  console.warn("Cloud client unavailable, running in local-only mode.", e);
+  _client = null;
 }
 
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    })
-  : null;
+export const supabase = _client;
 
 export function isSupabaseAvailable(): boolean {
   return supabase !== null;

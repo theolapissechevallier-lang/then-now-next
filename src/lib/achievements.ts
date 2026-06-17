@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-export type AchievementCategory = "goals" | "streak" | "pet" | "habits" | "special";
+export type AchievementCategory = "goals" | "streak" | "pet" | "habits" | "special" | "referrals";
 export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
 
 export interface AchievementDef {
@@ -18,7 +18,8 @@ export interface AchievementDef {
     | "pet_xp"
     | "pet_stage"
     | "habits_completed"
-    | "coins_total";
+    | "coins_total"
+    | "referrals_count";
 }
 
 export interface UnlockedAchievement {
@@ -35,6 +36,7 @@ export interface UserStats {
   petStage: number; // 1..5
   habitsCompleted: number;
   coinsTotal: number;
+  referralsCount: number;
 }
 
 export const RARITY_STYLE: Record<
@@ -314,6 +316,52 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     metric: "coins_total",
     threshold: 5000,
   },
+  // Referrals
+  {
+    id: "ref_first",
+    title: "First Recruit",
+    description: "Invite your first friend",
+    category: "referrals",
+    rarity: "common",
+    metric: "referrals_count",
+    threshold: 1,
+  },
+  {
+    id: "ref_5",
+    title: "Growth Leader",
+    description: "5 friends joined through you",
+    category: "referrals",
+    rarity: "rare",
+    metric: "referrals_count",
+    threshold: 5,
+  },
+  {
+    id: "ref_10",
+    title: "Community Builder",
+    description: "10 friends joined through you",
+    category: "referrals",
+    rarity: "epic",
+    metric: "referrals_count",
+    threshold: 10,
+  },
+  {
+    id: "ref_25",
+    title: "Trailblazer",
+    description: "25 friends joined through you",
+    category: "referrals",
+    rarity: "epic",
+    metric: "referrals_count",
+    threshold: 25,
+  },
+  {
+    id: "ref_50",
+    title: "Future Master",
+    description: "50 friends joined through you",
+    category: "referrals",
+    rarity: "legendary",
+    metric: "referrals_count",
+    threshold: 50,
+  },
 ];
 
 export function evaluateAchievements(
@@ -334,7 +382,9 @@ export function evaluateAchievements(
               ? stats.petStage
               : a.metric === "habits_completed"
                 ? stats.habitsCompleted
-                : stats.coinsTotal;
+                : a.metric === "coins_total"
+                  ? stats.coinsTotal
+                  : stats.referralsCount;
     if (value >= a.threshold) newly.push(a);
   }
   return newly;

@@ -887,7 +887,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_referral: { Args: { p_code: string }; Returns: Json }
+      referral_code_exists: { Args: { p_code: string }; Returns: boolean }
     }
     Enums: {
       life_event_type:

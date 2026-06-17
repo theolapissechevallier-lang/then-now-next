@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase, isSupabaseAvailable } from "./supabase";
+import { claimReferral, popPendingReferral } from "./referrals";
+import { toast } from "sonner";
 
 type AuthState = {
   user: User | null;
@@ -68,6 +70,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user: session?.user ?? null,
           loading: false,
         }));
+        if (_event === "SIGNED_IN" && session?.user) {
+          const pending = popPendingReferral();
+          if (pending) {
+            void claimReferral(pending).then((res) => {
+              if (res.ok) {
+                toast.success("Invite redeemed! +25 coins · +15 XP");
+              } else if (res.reason && res.reason !== "already_redeemed" && res.reason !== "self_referral") {
+                // Silent on the rest.
+              }
+            });
+          }
+        }
       }
     });
 

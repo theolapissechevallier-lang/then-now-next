@@ -53,6 +53,7 @@ const CATEGORY_TABS: { value: "all" | AchievementCategory; label: string }[] = [
   { value: "pet", label: "Pet" },
   { value: "habits", label: "Habits" },
   { value: "special", label: "Special" },
+  { value: "referrals", label: "Referrals" },
 ];
 
 const ICON_FOR: Record<AchievementCategory, "goal" | "streak" | "pet" | "habits" | "special"> = {
@@ -61,6 +62,7 @@ const ICON_FOR: Record<AchievementCategory, "goal" | "streak" | "pet" | "habits"
   pet: "pet",
   habits: "habits",
   special: "special",
+  referrals: "special",
 };
 
 function TrophyRoom() {

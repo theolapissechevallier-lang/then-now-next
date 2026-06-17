@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "./auth-context";
 import { useAppState, petStage } from "./store";
 import { useGoals } from "./goals-store";
+import { useReferrals } from "./referrals";
 import {
   ACHIEVEMENTS,
   achievementScore,
@@ -45,6 +46,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { state } = useAppState();
   const { goals } = useGoals();
+  const { stats: referralStats } = useReferrals();
   const [unlocked, setUnlocked] = useState<UnlockedAchievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [lifetimeHabits, setLifetimeHabits] = useState(0);
@@ -88,6 +90,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
       petStage: petStage(state.pet.xp).level,
       habitsCompleted: lifetimeHabits,
       coinsTotal: Math.max(state.coins, lifetimeCoins),
+      referralsCount: referralStats.totalRewarded,
     }),
     [
       goalsCompleted,
@@ -96,6 +99,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
       state.coins,
       lifetimeHabits,
       lifetimeCoins,
+      referralStats.totalRewarded,
     ],
   );
 

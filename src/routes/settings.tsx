@@ -4,6 +4,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useAppState } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/app-shell";
+import { ReferralCard, ReferralMilestonesList } from "@/components/referral-card";
+import { useReferrals } from "@/lib/referrals";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { user, signOut, isAvailable, loading } = useAuth();
   const { state, reset, loading: dataLoading } = useAppState();
+  const { stats: referralStats } = useReferrals();
 
   const handleSignOut = async () => {
     await signOut();
@@ -131,6 +134,21 @@ function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Referrals */}
+        {user && (
+          <>
+            <ReferralCard />
+            <div className="rounded-3xl border border-border bg-card p-5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Referral milestones
+              </p>
+              <div className="mt-3">
+                <ReferralMilestonesList unlocked={referralStats.totalRewarded} />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Danger zone */}
         <div className="rounded-3xl border border-danger/30 bg-card p-5">

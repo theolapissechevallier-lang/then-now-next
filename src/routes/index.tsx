@@ -10,6 +10,7 @@ import { MOOD_CONFIG } from "@/lib/journal-types";
 import { AvatarPortrait } from "@/components/avatar";
 import { PetCreature } from "@/components/pet";
 import { CoinPill } from "@/components/coin-pill";
+import { ReferralCard } from "@/components/referral-card";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -230,6 +231,10 @@ function Index() {
           </div>
         </section>
       )}
+
+      <section className="mt-4">
+        <ReferralCard />
+      </section>
 
       <Button asChild className="mt-6 h-12 w-full rounded-2xl text-base font-semibold shadow-glow">
         <Link to="/track">Log today's habits</Link>

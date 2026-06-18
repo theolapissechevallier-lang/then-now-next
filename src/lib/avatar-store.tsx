@@ -98,7 +98,16 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
           .from('user_avatars')
           .insert({
             user_id: user.id,
-            ...DEFAULT_AVATAR,
+            hair_style: DEFAULT_AVATAR.hairStyle,
+            hair_color: DEFAULT_AVATAR.hairColor,
+            eye_style: DEFAULT_AVATAR.eyeStyle,
+            eye_color: DEFAULT_AVATAR.eyeColor,
+            skin_tone: DEFAULT_AVATAR.skinTone,
+            outfit: DEFAULT_AVATAR.outfit,
+            outfit_color: DEFAULT_AVATAR.outfitColor,
+            accessory: DEFAULT_AVATAR.accessory,
+            background: DEFAULT_AVATAR.background,
+            title: DEFAULT_AVATAR.title,
           });
       }
 

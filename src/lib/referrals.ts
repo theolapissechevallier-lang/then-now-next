@@ -76,6 +76,10 @@ export async function claimReferral(code: string): Promise<{ ok: boolean; reason
 
 export async function checkReferralCode(code: string): Promise<boolean> {
   if (!supabase || !code) return false;
+  // Function is restricted to authenticated users; skip pre-auth probing
+  // and let claim_referral validate the code at redemption time.
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData?.session) return true;
   const { data, error } = await supabase.rpc("referral_code_exists", { p_code: code });
   if (error) return false;
   return !!data;
